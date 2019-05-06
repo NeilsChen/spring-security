@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chen.blog.dao.IArticleDao">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.chen.blog.pojo.Article">
+        <id column="id" property="id" />
+        <result column="title" property="title" />
+        <result column="content" property="content" />
+        <result column="type_id" property="typeId" />
+        <result column="author" property="author" />
+        <result column="author_name" property="authorName" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+        <result column="read_amount" property="readAmount" />
+        <result column="status" property="status" />
+        <result column="cover_img" property="coverImg" />
+        <collection property="tagName" ofType="com.chen.blog.pojo.ArticleTag">
+        	<id column="tag_id" property="id" />
+        	<result column="tag_name" property="name"/>
+        </collection>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, title, content, type_id, author, create_time, read_amount,status,cover_img,update_time
+    </sql>
+
+	<select id="selectCountByParams" resultType="java.lang.Integer">
+		SELECT count(id) FROM blog_article 
+		<where>
+			<if test="title != null">
+				and title like CONCAT('%','${title}','%')
+			</if>
+			<if test="typeId != null">
+				and type_id = #{typeId}
+			</if>
+			<if test="tagId != null">
+				and id in ( select article_id from blog_article_tag_relation where tag_id = #{tagId})
+			</if>
+			<if test="status != null">
+				and status = #{status}
+			</if>
+		</where>
+	</select>
+
+	<select id="selectByParams" resultMap="BaseResultMap">
+		select a.* ,t.id as tag_id,t.name as tag_name,u.username as author_name from blog_article a 
+		left join blog_article_tag_relation tr on a.id = tr.article_id
+		left join blog_article_tag t on tr.tag_id = t.id
+		left join neils.sys_user u on a.author=u.id
+		<where>
+			<if test="title != null">
+				and a.title like CONCAT('%','${title}','%')
+			</if>
+			<if test="typeId != null">
+				and a.type_id = #{typeId}
+			</if>
+			<if test="tagId != null">
+				and t.id = #{tagId}
+			</if>
+			<if test="status != null">
+				and a.status = #{status}
+			</if>
+				AND a.id IN (SELECT tmp.id FROM (SELECT id FROM blog_article 
+				<where>
+					<if test="title != null">
+						and title like CONCAT('%','${title}','%')
+					</if>
+					<if test="typeId != null">
+						and type_id = #{typeId}
+					</if>
+					<if test="status != null">
+						and status = #{status}
+					</if>
+					<if test="tagId != null">
+						and id in ( select article_id from blog_article_tag_relation where tag_id = #{tagId})
+					</if>
+				</where>
+				order by 
+				<if test="orderBy != null">
+					${orderBy}
+					<if test="asc == 1">
+						desc
+					</if>
+				</if>
+				<if test="orderBy == null">
+					create_time desc
+				</if>
+				LIMIT #{start},#{pagesize}) tmp)
+		</where>
+		
+		<trim>
+			order by 
+			<if test="orderBy != null">
+				a.${orderBy}
+				<if test="asc == 1">
+					desc
+				</if>
+			</if>
+			<if test="orderBy == null">
+				create_time desc
+			</if>
+		</trim>
+	</select>
+
+	<insert id="insertNewTags">
+		insert blog_article_tag_relation (article_id,tag_id) values 
+		<foreach collection="tagIdList" index="index" item="item" separator=",">
+			(#{articleId},#{item})
+		</foreach>
+	</insert>
+
+	<delete id="deleteArticleTagByAids" parameterType="java.lang.Integer">
+		delete from blog_article_tag_relation where article_id in
+		<foreach collection="articleIds" item="id" index="no" open="("
+			separator="," close=")">
+			#{id}
+		</foreach>
+	</delete>
+
+</mapper>

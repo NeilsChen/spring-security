@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chen.user.dao.IJobNameDao">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.chen.user.pojo.JobName">
+	    <result column="create_time" property="createTime" />
+	    <result column="update_time" property="updateTime" />
+	    <result column="delete_time" property="deleteTime" />
+	    <result column="is_del" property="isDel" />
+        <result column="id" property="id" />
+        <result column="job_name" property="jobName" />
+        <result column="cron" property="cron" />
+        <result column="status" property="status" />
+        <result column="descn" property="descn" />
+        <result column="last_run_time" property="lastRunTime" />
+        <result column="last_run_result" property="lastRunResult" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        create_time,
+        update_time,
+        delete_time,
+        is_del,
+        id, job_name, cron, status, descn, last_run_time, last_run_result
+    </sql>
+
+</mapper>
